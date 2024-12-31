@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كُل عام وأنتم بألف خير </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #001f3f;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        h1 {
+            color: #fff;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 1;
+        }
+        .social-links {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        .social-links li {
+            margin-bottom: 10px;
+        }
+        .social-links a {
+            display: inline-block;
+            padding: 12px 20px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .social-links a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(255,255,255,0.2);
+        }
+        .facebook { background-color: #3b5998; }
+        .twitter { background-color: #1da1f2; }
+        .linkedin { background-color: #0077b5; }
+        .instagram { background-color: #e4405f; }
+        .github { background-color: #333; }
+        #countdown {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fireworks"></canvas>
+    <h1> المتبقي للسنة الجديده</h1>
+    <div id="countdown"></div>
+    <ul class="social-links">
+        <li><a href="https://t.me/iinii3" target="_blank" class="facebook">TaWasL</a></li>
+       
+    </ul>
+
+    <script>
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Firework {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                this.sx = Math.random() * 3 - 1.5;
+                this.sy = Math.random() * -3 - 3;
+                this.size = Math.random() * 2 + 1;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.exploded = false;
+                this.particles = [];
+            }
+
+            update() {
+                if (!this.exploded) {
+                    this.x += this.sx;
+                    this.y += this.sy;
+                    this.sy += 0.05;
+
+                    if (this.sy >= -1) {
+                        this.explode();
+                    }
+                } else {
+                    this.particles.forEach((particle, index) => {
+                        particle.update();
+                        if (particle.alpha <= 0) {
+                            this.particles.splice(index, 1);
+                        }
+                    });
+                }
+            }
+
+            draw() {
+                if (!this.exploded) {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    this.particles.forEach(particle => particle.draw());
+                }
+            }
+
+            explode() {
+                this.exploded = true;
+                for (let i = 0; i < 100; i++) {
+                    this.particles.push(new Particle(this.x, this.y, this.color));
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 2 + 1;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 3 + 1;
+                this.dx = Math.cos(angle) * speed;
+                this.dy = Math.sin(angle) * speed;
+                this.color = color;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.005;
+            }
+
+            update() {
+                this.x += this.dx;
+                this.y += this.dy;
+                this.dy += 0.05;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        const fireworks = [];
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 31, 63, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < 0.05) {
+                fireworks.push(new Firework());
+            }
+
+            fireworks.forEach((firework, index) => {
+                firework.update();
+                firework.draw();
+                if (firework.exploded && firework.particles.length === 0) {
+                    fireworks.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        function updateCountdown() {
+            const now = new Date();
+            const newYear = new Date(now.getFullYear() + 1, 0, 1);
+            const diff = newYear - now;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').innerHTML = `العد التنازلي للسنة الجديدة: ${days} يوم ${hours} ساعة ${minutes} دقيقة ${seconds} ثانية`;
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown(); // Initial call to avoid delay
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
